@@ -1,12 +1,12 @@
-# Go Clean Architecture Template
+# G12 Todo Backend
 
-A production-ready template for building scalable and maintainable Go applications using Clean Architecture principles.
+A production-ready Todo application backend built with Go using Clean Architecture principles.
 
 ## 🚀 Features
 
 - Clean Architecture implementation
 - RESTful API with Gin framework
-- PostgreSQL database integration
+- PostgreSQL database integration with GORM
 - Environment-based configuration
 - Structured logging with Logrus
 - CORS middleware
@@ -15,6 +15,9 @@ A production-ready template for building scalable and maintainable Go applicatio
 - Feature-based organization
 - Domain-driven design
 - Standardized error handling
+- Docker containerization
+- Task management (CRUD operations)
+- Pagination support
 
 ## 📁 Project Structure
 
@@ -26,6 +29,10 @@ A production-ready template for building scalable and maintainable Go applicatio
 ├── database/            # Database connection and migrations
 ├── domain/              # Core business logic and entities
 ├── feature/             # Feature modules
+│   └── task/            # Task feature
+│       ├── delivery/    # HTTP handlers
+│       ├── repository/  # Data access layer
+│       └── usecase/     # Business logic
 ├── middlewares/         # HTTP middlewares
 ├── models/              # Data models
 ├── request/             # Request DTOs
@@ -34,21 +41,25 @@ A production-ready template for building scalable and maintainable Go applicatio
 ├── utils/               # Utility functions
 │   └── error.go         # Error handling utilities
 ├── main.go              # Application entry point
+├── Dockerfile           # Docker configuration
+├── docker-compose.yaml  # Docker Compose configuration
 └── go.mod               # Go module definition
 ```
 
 ## 🛠️ Prerequisites
 
-- Go 1.21 or higher
+- Go 1.24 or higher
 - PostgreSQL
-- Make (optional, for using Makefile commands)
+- Docker (optional, for containerized deployment)
 
 ## 🏁 Getting Started
 
+### Local Development
+
 1. Clone the repository:
    ```bash
-   git clone https://github.com/pubestpubest/go-clean-arch-template.git
-   cd go-clean-arch-template
+   git clone https://github.com/pubestpubest/g12-todo-backend.git
+   cd g12-todo-backend
    ```
 
 2. Copy example configuration:
@@ -68,28 +79,171 @@ A production-ready template for building scalable and maintainable Go applicatio
    go run main.go
    ```
 
-The server will start on `http://localhost:8080`.
+The server will start on `http://localhost:3000` (or the port specified in your configuration).
+
+### Docker Deployment
+
+1. Build and run with Docker Compose (requires env file):
+   ```bash
+   docker-compose --env-file ./configs/.env up --force-recreate --build
+   ```
+
+2. Or build and run manually (requires environment variables):
+   ```bash
+   docker build -t g12-todo-backend .
+   docker run --env-file ./configs/.env -p 3000:3000 g12-todo-backend
+   ```
+
+**Note:** All Docker commands require the environment file (`./configs/.env`) to be present and properly configured with the required variables.
 
 ## 🔧 Configuration
 
 The application uses environment variables for configuration. Create a `.env` file in the `configs/` directory with the following variables:
 
 ```env
-RUN_ENV=development
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_NAME=your_database
+PROJECT_NAME=g12-todo
+RUN_ENV=development # development || production
+DEPLOY_ENV=local # local || container
+
+DATABASE_HOST=localhost # g12-todo-db || localhost
+DATABASE_PORT=5432
+DATABASE_USERNAME=appuser
+DATABASE_PASSWORD=apppass
+DATABASE_NAME=todo_app
+
+BACKEND_PORT=3000
 ```
+
+### Environment Variables
+
+- `PROJECT_NAME`: Project name for Docker services
+- `RUN_ENV`: Application environment (development/production)
+- `DEPLOY_ENV`: Deployment environment (local/container)
+- `DATABASE_HOST`: PostgreSQL host address
+- `DATABASE_PORT`: PostgreSQL port
+- `DATABASE_USERNAME`: Database username
+- `DATABASE_PASSWORD`: Database password
+- `DATABASE_NAME`: Database name
+- `BACKEND_PORT`: Backend server port
 
 ## 📚 API Documentation
 
 ### Health Check
 - `GET /healthz` - Health check endpoint
 
-### API Version 1
-- Base URL: `/v1`
+### Task Management API (v1)
+
+Base URL: `/v1/tasks`
+
+#### Get Task List
+- **GET** `/v1/tasks`
+- **Query Parameters:**
+  - `page` (optional): Page number (default: 1)
+  - `limit` (optional): Items per page (default: 10)
+- **Response:**
+  ```json
+  {
+    "status": "SUCCESS",
+    "message": "List tasks successfully",
+    "data": [
+      {
+        "taskId": 1,
+        "title": "Complete project",
+        "description": "Finish the todo backend project",
+        "status": false,
+        "createdAt": "2024-01-01T00:00:00Z",
+        "updateAt": "2024-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 1,
+      "totalPages": 1
+    }
+  }
+  ```
+
+#### Get Task by ID
+- **GET** `/v1/tasks/{id}`
+- **Response:**
+  ```json
+  {
+    "status": "SUCCESS",
+    "message": "Task retrieved successfully",
+    "data": {
+      "taskId": 1,
+      "title": "Complete project",
+      "description": "Finish the todo backend project",
+      "status": false,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updateAt": "2024-01-01T00:00:00Z"
+    }
+  }
+  ```
+
+#### Create Task
+- **POST** `/v1/tasks`
+- **Request Body:**
+  ```json
+  {
+    "title": "New task",
+    "description": "Task description",
+    "status": false
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "status": "SUCCESS",
+    "message": "Task created successfully",
+    "data": {
+      "taskId": 1,
+      "title": "New task",
+      "description": "Task description",
+      "status": false,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updateAt": "2024-01-01T00:00:00Z"
+    }
+  }
+  ```
+
+#### Update Task
+- **PUT** `/v1/tasks/{id}`
+- **Request Body:**
+  ```json
+  {
+    "title": "Updated task",
+    "description": "Updated description",
+    "status": true
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "status": "SUCCESS",
+    "message": "Task updated successfully",
+    "data": {
+      "taskId": 1,
+      "title": "Updated task",
+      "description": "Updated description",
+      "status": true,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updateAt": "2024-01-01T00:00:00Z"
+    }
+  }
+  ```
+
+#### Delete Task
+- **DELETE** `/v1/tasks/{id}`
+- **Response:**
+  ```json
+  {
+    "status": "SUCCESS",
+    "message": "Task deleted successfully",
+    "data": null
+  }
+  ```
 
 ## 🔍 Logging
 
@@ -130,13 +284,13 @@ log.Fatal("Critical error occurred")
 
 ## 🚨 Error Handling
 
-The template implements a standardized error handling approach using the `utils/error.go` utility.
+The application implements a standardized error handling approach using the `utils/error.go` utility.
 
 ### Error Wrapping
 Errors are wrapped with context using the `errors.Wrap` function from the `github.com/pkg/errors` package:
 
 ```go
-err = errors.Wrap(err, "[UserRepository.GetUser]: Error getting user")
+err = errors.Wrap(err, "[TaskRepository.GetTaskByID]: Error getting task")
 ```
 
 ### Standard Error Formatting
@@ -153,15 +307,15 @@ func StandardError(err error) string {
 In HTTP handlers, errors are processed and returned in a standardized format:
 
 ```go
-func (h *UserHandler) GetUser(c *gin.Context) {
-    user, err := h.userService.GetUser(c.Param("id"))
+func (h *TaskHandler) GetTaskByID(c *gin.Context) {
+    task, err := h.taskUsecase.GetTaskByID(id)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{
             "error": utils.StandardError(err),
         })
         return
     }
-    c.JSON(http.StatusOK, user)
+    c.JSON(http.StatusOK, task)
 }
 ```
 
@@ -170,6 +324,34 @@ This approach provides:
 - Clean error messages for API responses
 - Detailed error context in logs
 - Easy error tracking through the call stack
+
+## 🏗️ Architecture
+
+This project follows Clean Architecture principles with clear separation of concerns:
+
+### Domain Layer
+- Contains business logic and interfaces
+- Independent of external frameworks
+- Defines repository interfaces
+- Contains core domain models
+
+### Application Layer
+- Implements use cases
+- Orchestrates domain objects
+- Contains business rules specific to application
+- Depends only on the domain layer
+
+### Interface Adapters
+- HTTP handlers in feature modules
+- Repository implementations
+- DTOs in request and response packages
+- Converts data between layers
+
+### Infrastructure Layer
+- Database configuration
+- External services integration
+- Framework configuration
+- Middleware implementation
 
 ## 📚 Libraries and Dependencies
 
@@ -182,7 +364,7 @@ This approach provides:
 
 ### Development Tools
 - [Go](https://golang.org/) - Programming language
-- [Make](https://www.gnu.org/software/make/) - Build automation tool
+- [Docker](https://www.docker.com/) - Containerization platform
 
 ## 📝 License
 
