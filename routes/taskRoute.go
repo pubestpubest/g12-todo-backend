@@ -15,7 +15,7 @@ func TaskRoutes(router *gin.RouterGroup) {
 		usecase.NewTaskUsecase(
 			repository.NewTaskRepository(database.DB)))
 
-	taskRoutes := router.Group("/v1/tasks")
+	taskRoutes := router.Group("/tasks")
 	{
 		taskRoutes.GET("", taskHandler.GetTaskList)
 		taskRoutes.GET("/:id", taskHandler.GetTaskByID)
