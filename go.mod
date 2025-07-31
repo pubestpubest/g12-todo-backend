@@ -1,4 +1,4 @@
-module github.com/pubestpubest/go-clean-arch-template
+module github.com/pubestpubest/g12-todo-backend
 
 go 1.24.2
 

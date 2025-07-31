@@ -7,13 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/pubestpubest/go-clean-arch-template/database"
-	"github.com/pubestpubest/go-clean-arch-template/middlewares"
-	"github.com/pubestpubest/go-clean-arch-template/routes"
+	"github.com/pubestpubest/g12-todo-backend/database"
+	"github.com/pubestpubest/g12-todo-backend/middlewares"
+	"github.com/pubestpubest/g12-todo-backend/routes"
 	log "github.com/sirupsen/logrus"
 )
-
-var runEnv string
 
 func init() {
 	fmt.Println("Hello, World from init()")
@@ -24,13 +22,20 @@ func init() {
 	})
 	log.SetLevel(log.InfoLevel)
 
-	runEnv = os.Getenv("RUN_ENV")
+	runEnv := os.Getenv("RUN_ENV")
 	if runEnv == "" {
 		runEnv = "development"
 	}
 
-	if err := godotenv.Load("configs/.env"); err != nil {
-		log.Fatal("[init]: Error loading .env file: ", err)
+	deployEnv := os.Getenv("DEPLOY_ENV")
+	if deployEnv == "" {
+		deployEnv = "local"
+	}
+
+	if deployEnv == "local" {
+		if err := godotenv.Load("configs/.env"); err != nil {
+			log.Fatal("[init]: Error loading .env file: ", err)
+		}
 	}
 
 	if runEnv == "development" {
@@ -71,7 +76,11 @@ func main() {
 	})
 
 	v1 := app.Group("/v1")
-	routes.UserRoutes(v1)
+	routes.TaskRoutes(v1)
 
-	app.Run(":8080")
+	port := os.Getenv("BACKEND_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	app.Run(":" + port)
 }

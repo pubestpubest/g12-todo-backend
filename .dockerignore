@@ -1,0 +1,16 @@
+# Ignore Go build output
+*.exe
+*.out
+*.test
+main
+
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore editor configs
+.vscode/
+.cursor/
+
+# ignore configs
+configs/*

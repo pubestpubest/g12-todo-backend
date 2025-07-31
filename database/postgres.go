@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pubestpubest/g12-todo-backend/models"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ import (
 var DB *gorm.DB
 
 func ConnectDB(runEnv string) (err error) {
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
 		os.Getenv("DATABASE_HOST"),
 		os.Getenv("DATABASE_PORT"),
 		os.Getenv("DATABASE_USERNAME"),
@@ -23,6 +24,9 @@ func ConnectDB(runEnv string) (err error) {
 
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	log.Info("[database]: Connected to database")
+
+	db.AutoMigrate(&models.Task{})
+
 	DB = db
 
 	return err

@@ -1,0 +1,22 @@
+name: ${PROJECT_NAME}
+services:
+  backend:
+    container_name: ${PROJECT_NAME}-backend
+    restart: always
+    build: .
+    ports:
+      - ${BACKEND_PORT}:3000
+    networks:
+      - pf-net
+    environment:
+      - DEPLOY_ENV=container
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_HOST=${PROJECT_NAME}-db
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - BACKEND_PORT=${BACKEND_PORT}
+networks:
+  pf-net: 
+    name: ${PROJECT_NAME}-net
+    external: true
