@@ -39,4 +39,4 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: pubestpubest/g12-todo-backend:latest
+          tags: pubest/g12-todo-backend:latest
