@@ -4,8 +4,6 @@ services:
     container_name: ${PROJECT_NAME}-backend
     restart: always
     build: .
-    ports:
-      - ${BACKEND_PORT}:3000
     networks:
       - pf-net
     environment:
@@ -17,6 +15,6 @@ services:
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - BACKEND_PORT=${BACKEND_PORT}
 networks:
-  pf-net: 
+  pf-net:
     name: ${PROJECT_NAME}-net
     external: true
