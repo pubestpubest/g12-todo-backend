@@ -6,6 +6,8 @@ services:
     build: .
     networks:
       - pf-net
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
     environment:
       - DEPLOY_ENV=container
       - DATABASE_NAME=${DATABASE_NAME}
