@@ -54,7 +54,7 @@ func (u *taskUsecase) GetTaskByID(id uint64) (*response.TaskResponse, error) {
 	}
 
 	if task == nil {
-		return nil, errors.New("task not found")
+		return nil, errors.New("[TaskUsecase.GetTaskByID]: Task not found")
 	}
 
 	return &response.TaskResponse{
@@ -95,7 +95,7 @@ func (u *taskUsecase) UpdateTask(id uint64, req *request.TaskRequest) (*response
 	}
 
 	if task == nil {
-		return nil, errors.New("task not found")
+		return nil, errors.New("[TaskUsecase.UpdateTask]: Task not found")
 	}
 
 	task.Title = req.Title

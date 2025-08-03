@@ -31,15 +31,27 @@ func (h *taskHandler) GetTaskList(c *gin.Context) {
 
 	// Bind query parameters
 	if err := c.ShouldBindQuery(&paginationReq); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pagination parameters"})
+		err = errors.Wrap(err, "[TaskHandler.GetTaskList]: Error binding query parameters")
+		log.Warn(err)
+		resp := response.PaginatedResponse[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	tasks, err := h.taskUsecase.GetTaskList(paginationReq.Page, paginationReq.Limit)
 	if err != nil {
 		err = errors.Wrap(err, "[TaskHandler.GetTaskList]: Error getting task list")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.StandardError(err)})
-		log.Warn(err)
+		log.Error(err)
+		resp := response.PaginatedResponse[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusInternalServerError, resp)
 		return
 	}
 
