@@ -77,6 +77,7 @@ func main() {
 
 	v1 := app.Group("/v1")
 	routes.TaskRoutes(v1)
+	routes.EventRoutes(v1)
 
 	port := os.Getenv("BACKEND_PORT")
 	if port == "" {
