@@ -40,3 +40,16 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: pubest/g12-todo-backend:latest
+          
+      - name: Send Discord notification
+        uses: Ilshidur/action-discord@0.4.0
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        with:
+          args: "✅ ${{ github.repository }} has been built and pushed to Docker Hub."
+          
+      - name: Trigger remote webhook deploy
+        run: |
+          curl -X POST ${{ secrets.WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{"secret": "${{ secrets.WEBHOOK_SECRET }}"}'
