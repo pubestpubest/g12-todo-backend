@@ -52,7 +52,6 @@ func (h *eventHandler) GetEventList(c *gin.Context) {
 			Data:    nil,
 		}
 		c.JSON(http.StatusInternalServerError, resp)
-		log.Warn(err)
 		return
 	}
 
@@ -90,7 +89,6 @@ func (h *eventHandler) GetEventByID(c *gin.Context) {
 			Data:    nil,
 		}
 		c.JSON(http.StatusInternalServerError, resp)
-		log.Warn(err)
 		return
 	}
 
@@ -126,7 +124,6 @@ func (h *eventHandler) CreateEvent(c *gin.Context) {
 			Data:    nil,
 		}
 		c.JSON(http.StatusInternalServerError, resp)
-		log.Warn(err)
 		return
 	}
 
@@ -176,7 +173,6 @@ func (h *eventHandler) UpdateEvent(c *gin.Context) {
 			Data:    nil,
 		}
 		c.JSON(http.StatusInternalServerError, resp)
-		log.Warn(err)
 		return
 	}
 
@@ -212,7 +208,6 @@ func (h *eventHandler) DeleteEvent(c *gin.Context) {
 			Data:    nil,
 		}
 		c.JSON(http.StatusInternalServerError, resp)
-		log.Warn(err)
 		return
 	}
 

@@ -106,6 +106,10 @@ func (u *eventUsecase) CreateEvent(req *request.EventRequest) (*response.EventRe
 }
 
 func (u *eventUsecase) UpdateEvent(id uint64, req *request.EventRequest) (*response.EventResponse, error) {
+	if req.StartTime.After(req.EndTime) || req.StartTime.Equal(req.EndTime) {
+		return nil, errors.New("[EventUsecase.CreateEvent]: startTime must be before endTime")
+	}
+
 	event, err := u.eventRepository.GetEventByID(id)
 	if err != nil {
 		return nil, errors.Wrap(err, "[EventUsecase.UpdateEvent]: Error getting event")
