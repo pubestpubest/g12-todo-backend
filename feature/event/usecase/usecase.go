@@ -28,12 +28,12 @@ func (u *eventUsecase) GetEventList(page, limit int) (*response.PaginatedRespons
 			ID:          event.ID,
 			Title:       event.Title,
 			Description: event.Description,
-			Complete:    event.Complete,
+			Complete:    &event.Complete,
 			CreatedAt:   event.CreatedAt,
 			UpdatedAt:   event.UpdatedAt,
 			Location:    event.Location,
 			StartTime:   event.StartTime,
-			EndTime:    event.EndTime,
+			EndTime:     event.EndTime,
 		})
 	}
 
@@ -64,12 +64,12 @@ func (u *eventUsecase) GetEventByID(id uint64) (*response.EventResponse, error) 
 		ID:          event.ID,
 		Title:       event.Title,
 		Description: event.Description,
-		Complete:    event.Complete,
+		Complete:    &event.Complete,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
 		Location:    event.Location,
 		StartTime:   event.StartTime,
-		EndTime:    event.EndTime,
+		EndTime:     event.EndTime,
 	}, nil
 }
 
@@ -77,7 +77,7 @@ func (u *eventUsecase) CreateEvent(req *request.EventRequest) (*response.EventRe
 	event := &models.Events{
 		Title:       req.Title,
 		Description: &req.Description,
-		Complete:    req.Complete,
+		Complete:    *req.Complete,
 		Location:    req.Location,
 		StartTime:   req.StartTime,
 		EndTime:     req.EndTime,
@@ -91,7 +91,7 @@ func (u *eventUsecase) CreateEvent(req *request.EventRequest) (*response.EventRe
 		ID:          event.ID,
 		Title:       event.Title,
 		Description: event.Description,
-		Complete:    event.Complete,
+		Complete:    &event.Complete,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
 		Location:    event.Location,
@@ -112,7 +112,7 @@ func (u *eventUsecase) UpdateEvent(id uint64, req *request.EventRequest) (*respo
 
 	event.Title = req.Title
 	event.Description = &req.Description
-	event.Complete = req.Complete
+	event.Complete = *req.Complete
 	event.Location = req.Location
 	event.StartTime = req.StartTime
 	event.EndTime = req.EndTime
@@ -125,7 +125,7 @@ func (u *eventUsecase) UpdateEvent(id uint64, req *request.EventRequest) (*respo
 		ID:          event.ID,
 		Title:       event.Title,
 		Description: event.Description,
-		Complete:    event.Complete,
+		Complete:    &event.Complete,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
 		Location:    event.Location,

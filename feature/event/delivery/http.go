@@ -31,14 +31,27 @@ func (h *eventHandler) GetEventList(c *gin.Context) {
 
 	// Bind query parameters
 	if err := c.ShouldBindQuery(&paginationReq); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid pagination parameters"})
+		err = errors.Wrap(err, "[EventHandler.GetEventList]: Error binding query parameters")
+		log.Warn(err)
+		resp := response.PaginatedResponse[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	events, err := h.eventUsecase.GetEventList(paginationReq.Page, paginationReq.Limit)
 	if err != nil {
 		err = errors.Wrap(err, "[EventHandler.GetEventList]: Error getting event list")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.StandardError(err)})
+		log.Error(err)
+		resp := response.PaginatedResponse[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusInternalServerError, resp)
 		log.Warn(err)
 		return
 	}
@@ -56,14 +69,27 @@ func (h *eventHandler) GetEventByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		err = errors.Wrap(err, "[EventHandler.GetEventByID]: Error parsing event ID")
+		log.Warn(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	event, err := h.eventUsecase.GetEventByID(id)
 	if err != nil {
 		err = errors.Wrap(err, "[EventHandler.GetEventByID]: Error getting event")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.StandardError(err)})
+		log.Error(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusInternalServerError, resp)
 		log.Warn(err)
 		return
 	}
@@ -79,14 +105,27 @@ func (h *eventHandler) GetEventByID(c *gin.Context) {
 func (h *eventHandler) CreateEvent(c *gin.Context) {
 	var req request.EventRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		err = errors.Wrap(err, "[EventHandler.CreateEvent]: Error binding request body")
+		log.Warn(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	event, err := h.eventUsecase.CreateEvent(&req)
 	if err != nil {
 		err = errors.Wrap(err, "[EventHandler.CreateEvent]: Error creating event")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.StandardError(err)})
+		log.Error(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusInternalServerError, resp)
 		log.Warn(err)
 		return
 	}
@@ -103,20 +142,40 @@ func (h *eventHandler) UpdateEvent(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		err = errors.Wrap(err, "[EventHandler.UpdateEvent]: Error parsing event ID")
+		log.Warn(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	var req request.EventRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		err = errors.Wrap(err, "[EventHandler.UpdateEvent]: Error binding request body")
+		log.Warn(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	event, err := h.eventUsecase.UpdateEvent(id, &req)
 	if err != nil {
 		err = errors.Wrap(err, "[EventHandler.UpdateEvent]: Error updating event")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.StandardError(err)})
+		log.Error(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusInternalServerError, resp)
 		log.Warn(err)
 		return
 	}
@@ -133,13 +192,26 @@ func (h *eventHandler) DeleteEvent(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		err = errors.Wrap(err, "[EventHandler.DeleteEvent]: Error parsing event ID")
+		log.Warn(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 
 	if err := h.eventUsecase.DeleteEvent(id); err != nil {
 		err = errors.Wrap(err, "[EventHandler.DeleteEvent]: Error deleting event")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.StandardError(err)})
+		log.Error(err)
+		resp := response.Response[interface{}]{
+			Status:  constant.Failed,
+			Message: utils.StandardError(err),
+			Data:    nil,
+		}
+		c.JSON(http.StatusInternalServerError, resp)
 		log.Warn(err)
 		return
 	}
