@@ -5,7 +5,7 @@ import (
 )
 
 type EventResponse struct {
-	ID          uint64     `json:"taskId"`
+	ID          uint64     `json:"eventId"`
 	Title       string     `json:"title"`
 	Description *string    `json:"description"`
 	Complete    *bool      `json:"complete"`
