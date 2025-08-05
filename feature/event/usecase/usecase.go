@@ -74,6 +74,11 @@ func (u *eventUsecase) GetEventByID(id uint64) (*response.EventResponse, error) 
 }
 
 func (u *eventUsecase) CreateEvent(req *request.EventRequest) (*response.EventResponse, error) {
+
+	if req.StartTime.After(req.EndTime) || req.StartTime.Equal(req.EndTime) {
+		return nil, errors.New("[EventUsecase.CreateEvent]: startTime must be before endTime")
+	}
+
 	event := &models.Events{
 		Title:       req.Title,
 		Description: &req.Description,
