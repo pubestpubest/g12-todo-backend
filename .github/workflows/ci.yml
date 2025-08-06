@@ -125,6 +125,8 @@ jobs:
       # Step 7: Start backend service
       - name: Start backend service
         env:
+          DEPLOY_ENV: container
+          RUN_ENV: production
           DATABASE_HOST: localhost
           DATABASE_PORT: 5432
           DATABASE_USERNAME: postgres
