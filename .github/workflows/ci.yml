@@ -122,7 +122,7 @@ jobs:
           echo "Building application..."
           go build -o app main.go
       
-      # Step 7: Start backend service (placeholder)
+      # Step 7: Start backend service
       - name: Start backend service
         env:
           DATABASE_HOST: localhost
@@ -133,29 +133,44 @@ jobs:
           BACKEND_PORT: 3000
         run: |
           echo "Starting backend service..."
-          # Future: Start the application in background
-          # ./app &
-          # sleep 5
-          # echo "Backend started on port 3000"
+          ./app &
+          sleep 10
+          echo "Backend started on port 3000"
       
-      # Step 8: Install Postman CLI
+      # Step 8: Verify backend is running
+      - name: Wait for backend to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/healthz > /dev/null 2>&1; then
+              echo "Backend is ready!"
+              break
+            fi
+            echo "Attempt $i/30: Backend not ready yet, waiting..."
+            sleep 2
+          done
+          # Final check
+          curl -f http://localhost:3000/healthz || (echo "Backend failed to start" && exit 1)
+      
+      # Step 9: Install Postman CLI
       - name: Install Postman CLI
         run: |
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
       
-      # Step 9: Login to Postman CLI
+      # Step 10: Login to Postman CLI
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
       
-      # Step 10: Run API tests
+      # Step 11: Run API tests
       - name: Run API tests
         run: |
           postman collection run "40351880-d9bf9fd8-5edb-4a9c-abf3-74005e69627d" -e "40351880-09806848-8f75-4429-8035-99316abc5387" -i "40351880-ea29874d-ef04-4334-ba37-2a6afe4a4ce5" -i "40351880-2116a71b-fea6-4950-9e05-dcbd5d677e5e" -i "40351880-2709cf6d-36fb-43b0-9e41-b94d616fb290" -i "40351880-1e2a4cf9-dcbd-451f-849d-95c0ca06df4d" -i "40351880-86d6ca6c-3a99-4d7d-b3f0-f1acbdba0124" -i "40351880-c22343df-92d5-462f-ac5a-3b67b398ab37"
       
-      # Step 11: Cleanup
+      # Step 12: Cleanup
       - name: Cleanup
         if: always()
         run: |
           echo "Cleaning up test environment..."
-          # Future: Stop services, cleanup test data
-          # pkill -f "./app" || true
+          # Stop the backend service
+          pkill -f "./app" || true
+          echo "Cleanup completed"
