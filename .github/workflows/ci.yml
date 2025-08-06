@@ -49,22 +49,7 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
       
-      # Step 6: Debug Go environment
-      - name: Debug Go environment
-        run: |
-          echo "Go version: $(go version)"
-          echo "GOPATH: $GOPATH"
-          echo "GOROOT: $GOROOT"
-          echo "Go env:"
-          go env
-          echo "Module info:"
-          go list -m all
-      
-      # Step 7: Run linting (optional but recommended)
-      - name: Run go vet
-        run: go vet ./...
-      
-      # Step 8: Run unit tests
+      # Step 6: Run unit tests
       - name: Run unit tests
         run: |
           echo "Running unit tests..."
