@@ -54,31 +54,7 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests..."
-          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-      
-      # Step 8: Upload test coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.out
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-        continue-on-error: true
-      
-      # Step 9: Generate coverage report
-      - name: Generate coverage report
-        run: |
-          go tool cover -html=coverage.out -o coverage.html
-          echo "Coverage report generated: coverage.html"
-      
-      # Step 10: Display coverage summary
-      - name: Coverage Summary
-        run: |
-          echo "## Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          go tool cover -func=coverage.out >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
+          go test -v -race ./...
 
   # Placeholder for future integration tests
   integration-tests:
