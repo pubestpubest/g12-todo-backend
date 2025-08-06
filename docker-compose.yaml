@@ -10,6 +10,7 @@ services:
       - ${BACKEND_PORT}:${BACKEND_PORT}
     environment:
       - DEPLOY_ENV=container
+      - RUN_ENV=production
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_PORT=${DATABASE_PORT}
       - DATABASE_HOST=${PROJECT_NAME}-db
