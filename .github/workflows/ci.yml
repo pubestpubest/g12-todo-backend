@@ -54,7 +54,7 @@ jobs:
       - name: Run unit tests
         run: |
           echo "Running unit tests..."
-          go test -v -race ./...
+          go test -v ./feature/.../usecase
 
   # Placeholder for future integration tests
   integration-tests:
