@@ -25,7 +25,9 @@ func ConnectDB(runEnv string) (err error) {
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	log.Info("[database]: Connected to database")
 
-	db.AutoMigrate(&models.Task{})
+	db.AutoMigrate(
+		&models.Events{},
+	)
 
 	DB = db
 
