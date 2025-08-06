@@ -55,21 +55,25 @@ jobs:
           echo "Running unit tests..."
           go test -v -race ./feature/.../usecase
 
-  # Placeholder for future integration tests
+  # Integration tests with PostgreSQL database
+  # This job mirrors the production environment setup from docker-compose.yaml
+  # Database configuration matches the production PostgreSQL 17 Alpine setup
+  # Requires POSTMAN_API_KEY secret to be set in repository secrets
   integration-tests:
-    name: Integration Tests (Placeholder)
+    name: Integration Tests
     runs-on: ubuntu-latest
     needs: unit-tests
-    if: false  # Disabled for now - will be enabled in the future
     
     services:
-      # Database service for integration tests
+      # Database service for integration tests - matches production setup
       postgres:
-        image: postgres:15
+        image: postgres:17-alpine
         env:
-          POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
+          POSTGRES_USER: postgres
           POSTGRES_DB: testdb
+          POSTGRES_APP_USER: appuser
+          POSTGRES_APP_PASSWORD: apppass
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -107,54 +111,48 @@ jobs:
       # Step 5: Wait for PostgreSQL to be ready
       - name: Wait for PostgreSQL
         run: |
-          until pg_isready -h localhost -p 5432 -U testuser; do
+          until pg_isready -h localhost -p 5432 -U postgres; do
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
       
-      # Step 6: Set up test database
-      - name: Set up test database
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: testuser
-          DB_PASSWORD: testpass
-          DB_NAME: testdb
-        run: |
-          echo "Setting up test database..."
-          # Future: Run database migrations
-          # go run main.go migrate
-      
-      # Step 7: Build application
+      # Step 6: Build application
       - name: Build application
         run: |
           echo "Building application..."
           go build -o app main.go
       
-      # Step 8: Start backend service (placeholder)
+      # Step 7: Start backend service (placeholder)
       - name: Start backend service
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: testuser
-          DB_PASSWORD: testpass
-          DB_NAME: testdb
-          PORT: 8080
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USERNAME: postgres
+          DATABASE_PASSWORD: testpass
+          DATABASE_NAME: testdb
+          BACKEND_PORT: 3000
         run: |
           echo "Starting backend service..."
           # Future: Start the application in background
           # ./app &
           # sleep 5
-          # echo "Backend started on port 8080"
+          # echo "Backend started on port 3000"
       
-      # Step 9: Run integration tests (placeholder)
-      - name: Run integration tests
+      # Step 8: Install Postman CLI
+      - name: Install Postman CLI
         run: |
-          echo "Running integration tests..."
-          # Future: Run integration tests
-          # go test -v -tags=integration ./tests/integration/...
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
       
-      # Step 10: Cleanup
+      # Step 9: Login to Postman CLI
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+      
+      # Step 10: Run API tests
+      - name: Run API tests
+        run: |
+          postman collection run "40351880-d9bf9fd8-5edb-4a9c-abf3-74005e69627d" -e "40351880-09806848-8f75-4429-8035-99316abc5387"
+      
+      # Step 11: Cleanup
       - name: Cleanup
         if: always()
         run: |
