@@ -138,6 +138,12 @@ func createTestEventRequest(title, description, location string, complete bool, 
 	}
 }
 
+// Helper function to get deterministic test times
+func getTestTimes() (time.Time, time.Time) {
+	baseTime := time.Date(2024, 1, 1, 10, 0, 0, 0, time.UTC)
+	return baseTime, baseTime.Add(time.Hour)
+}
+
 func TestNewEventUsecase(t *testing.T) {
 	mockRepo := newMockEventRepository()
 	usecase := NewEventUsecase(mockRepo)
@@ -322,15 +328,21 @@ func TestEventUsecase_CreateEvent(t *testing.T) {
 		},
 		{
 			name: "start time after end time",
-			request: createTestEventRequest("Test Event", "Test Description", "Test Location", false,
-				time.Now().Add(time.Hour), time.Now()),
+			request: func() *request.EventRequest {
+				startTime, endTime := getTestTimes()
+				return createTestEventRequest("Test Event", "Test Description", "Test Location", false,
+					endTime, startTime) // Swap them to make start after end
+			}(),
 			expectedError:  true,
 			expectedErrMsg: "startTime must be before endTime",
 		},
 		{
 			name: "start time equal to end time",
-			request: createTestEventRequest("Test Event", "Test Description", "Test Location", false,
-				time.Now(), time.Now()),
+			request: func() *request.EventRequest {
+				baseTime := time.Date(2024, 1, 1, 10, 0, 0, 0, time.UTC)
+				return createTestEventRequest("Test Event", "Test Description", "Test Location", false,
+					baseTime, baseTime) // Same exact time
+			}(),
 			expectedError:  true,
 			expectedErrMsg: "startTime must be before endTime",
 		},
@@ -413,8 +425,11 @@ func TestEventUsecase_UpdateEvent(t *testing.T) {
 		{
 			name:    "start time after end time",
 			eventID: 1,
-			request: createTestEventRequest("Updated Event", "Updated Description", "Updated Location", true,
-				time.Now().Add(time.Hour), time.Now()),
+			request: func() *request.EventRequest {
+				startTime, endTime := getTestTimes()
+				return createTestEventRequest("Updated Event", "Updated Description", "Updated Location", true,
+					endTime, startTime) // Swap them to make start after end
+			}(),
 			expectedError:  true,
 			expectedErrMsg: "startTime must be before endTime",
 		},
