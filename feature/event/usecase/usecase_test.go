@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -357,7 +358,7 @@ func TestEventUsecase_CreateEvent(t *testing.T) {
 					t.Error("Expected error, got nil")
 					return
 				}
-				if tt.expectedErrMsg != "" && !contains(err.Error(), tt.expectedErrMsg) {
+				if tt.expectedErrMsg != "" && !strings.Contains(err.Error(), tt.expectedErrMsg) {
 					t.Errorf("Expected error message to contain '%s', got: %v", tt.expectedErrMsg, err)
 				}
 				return
@@ -466,7 +467,7 @@ func TestEventUsecase_UpdateEvent(t *testing.T) {
 					t.Error("Expected error, got nil")
 					return
 				}
-				if tt.expectedErrMsg != "" && !contains(err.Error(), tt.expectedErrMsg) {
+				if tt.expectedErrMsg != "" && !strings.Contains(err.Error(), tt.expectedErrMsg) {
 					t.Errorf("Expected error message to contain '%s', got: %v", tt.expectedErrMsg, err)
 				}
 				return
@@ -540,19 +541,4 @@ func TestEventUsecase_DeleteEvent(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Helper function to check if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
-		(len(s) > len(substr) && findSubstring(s, substr)))
-}
-
-func findSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }
