@@ -1,2 +1,7 @@
 /configs
 .DB_Store
+
+# Build artifacts
+app
+app-*
+*.exe

@@ -1,0 +1,178 @@
+name: CI Testing
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/workflows/docker-push.yml"
+
+env:
+  GO_VERSION: "1.24.2"
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Step 2: Set up Go
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false  # We'll handle caching manually for better control
+      
+      # Step 3: Cache Go modules
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ env.GO_VERSION }}-
+            ${{ runner.os }}-go-
+          fail-on-cache-miss: false
+      
+      # Step 4: Download dependencies
+      - name: Download dependencies
+        run: go mod download
+      
+      # Step 5: Verify dependencies
+      - name: Verify dependencies
+        run: go mod verify
+      
+      # Step 6: Run unit tests
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests..."
+          go test -v -race ./feature/.../usecase
+
+  # Integration tests with PostgreSQL database
+  # This job mirrors the production environment setup from docker-compose.yaml
+  # Database configuration matches the production PostgreSQL 17 Alpine setup
+  # Requires POSTMAN_API_KEY secret to be set in repository secrets
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    
+    services:
+      # Database service for integration tests - matches production setup
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_USER: postgres
+          POSTGRES_DB: testdb
+          POSTGRES_APP_USER: appuser
+          POSTGRES_APP_PASSWORD: apppass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Step 2: Set up Go
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      
+      # Step 3: Cache Go modules
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      # Step 4: Download dependencies
+      - name: Download dependencies
+        run: go mod download
+      
+      # Step 5: Wait for PostgreSQL to be ready
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+      
+      # Step 6: Build application
+      - name: Build application
+        run: |
+          echo "Building application..."
+          go build -o app main.go
+      
+      # Step 7: Start backend service
+      - name: Start backend service
+        env:
+          DEPLOY_ENV: container
+          RUN_ENV: production
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USERNAME: postgres
+          DATABASE_PASSWORD: testpass
+          DATABASE_NAME: testdb
+          BACKEND_PORT: 3000
+        run: |
+          echo "Starting backend service..."
+          ./app &
+          sleep 10
+          echo "Backend started on port 3000"
+      
+      # Step 8: Verify backend is running
+      - name: Wait for backend to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/healthz > /dev/null 2>&1; then
+              echo "Backend is ready!"
+              break
+            fi
+            echo "Attempt $i/30: Backend not ready yet, waiting..."
+            sleep 2
+          done
+          # Final check
+          curl -f http://localhost:3000/healthz || (echo "Backend failed to start" && exit 1)
+      
+      # Step 9: Install Postman CLI
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+      
+      # Step 10: Login to Postman CLI
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+      
+      # Step 11: Run API tests
+      - name: Run API tests
+        run: |
+          postman collection run "40351880-d9bf9fd8-5edb-4a9c-abf3-74005e69627d" -e "40351880-09806848-8f75-4429-8035-99316abc5387" -i "40351880-ea29874d-ef04-4334-ba37-2a6afe4a4ce5" -i "40351880-2116a71b-fea6-4950-9e05-dcbd5d677e5e" -i "40351880-2709cf6d-36fb-43b0-9e41-b94d616fb290" -i "40351880-1e2a4cf9-dcbd-451f-849d-95c0ca06df4d" -i "40351880-86d6ca6c-3a99-4d7d-b3f0-f1acbdba0124" -i "40351880-c22343df-92d5-462f-ac5a-3b67b398ab37"
+      
+      # Step 12: Cleanup
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Cleaning up test environment..."
+          # Stop the backend service
+          pkill -f "./app" || true
+          echo "Cleanup completed"
